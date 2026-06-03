@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Leave & Approval Management System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- ============================================================
+         Employee Leave & Approval Management System
+         Inspired by Microsoft Dynamics 365 Finance & Operations
+    ============================================================ -->
+
+    <!-- ==================== SIDEBAR NAVIGATION ==================== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-icon">&#9881;</span>
+                <span class="logo-text">D365 Leave Mgmt</span>
+            </div>
+            <button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#dashboard" class="nav-item active" data-section="dashboard">
+                <span class="nav-icon">&#9632;</span>
+                <span class="nav-label">Dashboard</span>
+            </a>
+            <a href="#leave-request" class="nav-item" data-section="leave-request">
+                <span class="nav-icon">&#9998;</span>
+                <span class="nav-label">Leave Request</span>
+            </a>
+            <a href="#workflow" class="nav-item" data-section="workflow">
+                <span class="nav-icon">&#10003;</span>
+                <span class="nav-label">Workflow Approval</span>
+            </a>
+            <a href="#import-export" class="nav-item" data-section="import-export">
+                <span class="nav-icon">&#8644;</span>
+                <span class="nav-label">Import / Export</span>
+            </a>
+            <a href="#api-integration" class="nav-item" data-section="api-integration">
+                <span class="nav-icon">&#9729;</span>
+                <span class="nav-label">API Integration</span>
+            </a>
+            <a href="#chain-of-command" class="nav-item" data-section="chain-of-command">
+                <span class="nav-icon">&#9881;</span>
+                <span class="nav-label">Chain of Command</span>
+            </a>
+            <a href="#event-handlers" class="nav-item" data-section="event-handlers">
+                <span class="nav-icon">&#9888;</span>
+                <span class="nav-label">Event Handlers</span>
+            </a>
+            <a href="#d365-mapping" class="nav-item" data-section="d365-mapping">
+                <span class="nav-icon">&#128214;</span>
+                <span class="nav-label">D365 F&O Mapping</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar">HR</div>
+                <div class="user-details">
+                    <span class="user-name">HR Admin</span>
+                    <span class="user-role">System Administrator</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ==================== MAIN CONTENT AREA ==================== -->
+    <main class="main-content" id="mainContent">
+        <!-- Top Navigation Bar -->
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <h1 class="page-title" id="pageTitle">Dashboard</h1>
+            </div>
+            <div class="top-bar-right">
+                <span class="current-date" id="currentDate"></span>
+                <button class="btn-icon" id="notificationBtn" title="Notifications">&#128276;</button>
+            </div>
+        </header>
+
+        <!-- ==================== SECTION: DASHBOARD ==================== -->
+        <section class="content-section active" id="section-dashboard">
+            <div class="dashboard">
+                <div class="summary-cards">
+                    <div class="summary-card card-total">
+                        <div class="card-icon">&#128203;</div>
+                        <div class="card-content">
+                            <h3>Total Requests</h3>
+                            <p class="card-value" id="totalRequests">0</p>
+                        </div>
+                    </div>
+                    <div class="summary-card card-pending">
+                        <div class="card-icon">&#8987;</div>
+                        <div class="card-content">
+                            <h3>Pending</h3>
+                            <p class="card-value" id="pendingRequests">0</p>
+                        </div>
+                    </div>
+                    <div class="summary-card card-approved">
+                        <div class="card-icon">&#10003;</div>
+                        <div class="card-content">
+                            <h3>Approved</h3>
+                            <p class="card-value" id="approvedRequests">0</p>
+                        </div>
+                    </div>
+                    <div class="summary-card card-rejected">
+                        <div class="card-icon">&#10007;</div>
+                        <div class="card-content">
+                            <h3>Rejected</h3>
+                            <p class="card-value" id="rejectedRequests">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-panel">
+                    <div class="panel-header">
+                        <h2>Recent Leave Requests</h2>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table" id="recentRequestsTable">
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>Employee</th>
+                                    <th>Department</th>
+                                    <th>Leave Type</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentRequestsBody">
+                                <tr class="empty-row">
+                                    <td colspan="7">No leave requests found. Create your first request!</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="dashboard-panel">
+                    <div class="panel-header">
+                        <h2>Quick Actions</h2>
+                    </div>
+                    <div class="quick-actions">
+                        <button class="action-btn" onclick="navigateTo('leave-request')">
+                            <span class="action-icon">&#9998;</span> New Leave Request
+                        </button>
+                        <button class="action-btn" onclick="navigateTo('workflow')">
+                            <span class="action-icon">&#10003;</span> Review Pending
+                        </button>
+                        <button class="action-btn" onclick="navigateTo('import-export')">
+                            <span class="action-icon">&#8644;</span> Import / Export Data
+                        </button>
+                        <button class="action-btn" onclick="navigateTo('api-integration')">
+                            <span class="action-icon">&#9729;</span> View Holidays
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SECTION: LEAVE REQUEST ==================== -->
+        <section class="content-section" id="section-leave-request">
+            <div class="section-container">
+                <div class="form-panel">
+                    <div class="panel-header">
+                        <h2>Submit Leave Request</h2>
+                        <span class="panel-badge">Employee Self-Service</span>
+                    </div>
+                    <form id="leaveRequestForm" class="form-grid">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="employeeId">Employee ID <span class="required">*</span></label>
+                                <input type="text" id="employeeId" placeholder="e.g., EMP001" required>
+                                <span class="field-hint" id="employeeIdHint"></span>
+                            </div>
+                            <div class="form-group">
+                                <label for="employeeName">Employee Name <span class="required">*</span></label>
+                                <input type="text" id="employeeName" placeholder="Enter full name" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="department">Department <span class="required">*</span></label>
+                                <select id="department" required>
+                                    <option value="">Select Department</option>
+                                    <option value="Human Resources">Human Resources</option>
+                                    <option value="Information Technology">Information Technology</option>
+                                    <option value="Finance">Finance</option>
+                                    <option value="Marketing">Marketing</option>
+                                    <option value="Operations">Operations</option>
+                                    <option value="Sales">Sales</option>
+                                    <option value="Legal">Legal</option>
+                                    <option value="Research & Development">Research &amp; Development</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="leaveType">Leave Type <span class="required">*</span></label>
+                                <select id="leaveType" required>
+                                    <option value="">Select Leave Type</option>
+                                    <option value="Annual Leave">Annual Leave</option>
+                                    <option value="Sick Leave">Sick Leave</option>
+                                    <option value="Personal Leave">Personal Leave</option>
+                                    <option value="Maternity Leave">Maternity Leave</option>
+                                    <option value="Paternity Leave">Paternity Leave</option>
+                                    <option value="Bereavement Leave">Bereavement Leave</option>
+                                    <option value="Unpaid Leave">Unpaid Leave</option>
+                                    <option value="Study Leave">Study Leave</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="startDate">Leave Start Date <span class="required">*</span></label>
+                                <input type="date" id="startDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="endDate">Leave End Date <span class="required">*</span></label>
+                                <input type="date" id="endDate" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group full-width">
+                                <div class="calculated-days" id="calculatedDays">
+                                    <span class="calc-label">Calculated Leave Days:</span>
+                                    <span class="calc-value" id="leaveDaysCount">0</span>
+                                    <span class="calc-unit">day(s)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group full-width">
+                                <label for="reason">Reason for Leave <span class="required">*</span></label>
+                                <textarea id="reason" rows="4" placeholder="Provide a reason for your leave request..." required></textarea>
+                            </div>
+                        </div>
+                        <div class="validation-messages" id="validationMessages"></div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <span class="btn-icon">&#10003;</span> Submit Leave Request
+                            </button>
+                            <button type="reset" class="btn btn-secondary" id="resetBtn">
+                                <span class="btn-icon">&#8634;</span> Reset Form
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="form-panel">
+                    <div class="panel-header">
+                        <h2>My Leave Requests</h2>
+                        <button class="btn btn-sm" onclick="clearAllRequests()">Clear All</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table" id="myRequestsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Employee</th>
+                                    <th>Type</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Days</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="myRequestsBody">
+                                <tr class="empty-row">
+                                    <td colspan="8">No leave requests yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SECTION: WORKFLOW APPROVAL ==================== -->
+        <section class="content-section" id="section-workflow">
+            <div class="section-container">
+                <div class="workflow-status-bar">
+                    <div class="workflow-step completed">
+                        <span class="step-number">1</span>
+                        <span class="step-label">Request Created</span>
+                    </div>
+                    <div class="workflow-connector"></div>
+                    <div class="workflow-step active">
+                        <span class="step-number">2</span>
+                        <span class="step-label">Manager Review</span>
+                    </div>
+                    <div class="workflow-connector"></div>
+                    <div class="workflow-step">
+                        <span class="step-number">3</span>
+                        <span class="step-label">Approved / Rejected</span>
+                    </div>
+                    <div class="workflow-connector"></div>
+                    <div class="workflow-step">
+                        <span class="step-number">4</span>
+                        <span class="step-label">Status Updated</span>
+                    </div>
+                </div>
+                <div class="form-panel">
+                    <div class="panel-header">
+                        <h2>Manager Dashboard - Pending Approvals</h2>
+                        <span class="panel-badge pending-badge" id="pendingCountBadge">0 Pending</span>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table" id="pendingTable">
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>Employee ID</th>
+                                    <th>Employee Name</th>
+                                    <th>Department</th>
+                                    <th>Leave Type</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Days</th>
+                                    <th>Reason</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pendingBody">
+                                <tr class="empty-row">
+                                    <td colspan="10">No pending requests to review.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="form-panel">
+                    <div class="panel-header">
+                        <h2>Approval History</h2>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table" id="approvalHistoryTable">
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>Employee</th>
+                                    <th>Type</th>
+                                    <th>Days</th>
+                                    <th>Status</th>
+                                    <th>Reviewed By</th>
+                                    <th>Review Date</th>
+                                    <th>Comments</th>
+                                </tr>
+                            </thead>
+                            <tbody id="approvalHistoryBody">
+                                <tr class="empty-row">
+                                    <td colspan="8">No approval history yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SECTION: IMPORT / EXPORT ==================== -->
+        <section class="content-section" id="section-import-export">
+            <div class="section-container">
+                <div class="import-export-grid">
+                    <div class="form-panel">
+                        <div class="panel-header">
+                            <h2>Import Leave Data</h2>
+                            <span class="panel-badge">CSV Upload</span>
+                        </div>
+                        <div class="import-section">
+                            <div class="upload-area" id="uploadArea">
+                                <div class="upload-icon">&#128194;</div>
+                                <p>Drag &amp; drop CSV file here or click to browse</p>
+                                <input type="file" id="csvFileInput" accept=".csv" hidden>
+                                <button class="btn btn-primary" onclick="document.getElementById('csvFileInput').click()">
+                                    Select CSV File
+                                </button>
+                            </div>
+                            <div class="import-format-info">
+                                <h4>Expected CSV Format:</h4>
+                                <code>EmployeeID,EmployeeName,Department,LeaveType,StartDate,EndDate,Reason</code>
+                                <div class="sample-data">
+                                    <p><strong>Sample:</strong></p>
+                                    <code>EMP001,John Smith,Information Technology,Annual Leave,2026-06-10,2026-06-15,Family vacation</code>
+                                    <code>EMP002,Jane Doe,Finance,Sick Leave,2026-06-12,2026-06-13,Medical appointment</code>
+                                </div>
+                                <button class="btn btn-sm" onclick="downloadSampleCSV()">Download Sample CSV</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-panel">
+                        <div class="panel-header">
+                            <h2>Export Leave Data</h2>
+                            <span class="panel-badge">CSV Download</span>
+                        </div>
+                        <div class="export-section">
+                            <div class="export-options">
+                                <div class="form-group">
+                                    <label for="exportFilter">Export Filter</label>
+                                    <select id="exportFilter">
+                                        <option value="all">All Requests</option>
+                                        <option value="Pending">Pending Only</option>
+                                        <option value="Approved">Approved Only</option>
+                                        <option value="Rejected">Rejected Only</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary" onclick="exportToCSV()">
+                                    <span class="btn-icon">&#8615;</span> Export to CSV
+                                </button>
+                            </div>
+                            <div class="export-summary" id="exportSummary">
+                                <p>Total records available: <strong id="exportableCount">0</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-panel">
+                    <div class="panel-header">
+                        <h2>Data Preview</h2>
+                        <span class="panel-badge" id="previewCountBadge">0 Records</span>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table" id="previewTable">
+                            <thead>
+                                <tr>
+                                    <th>Employee ID</th>
+                                    <th>Employee Name</th>
+                                    <th>Department</th>
+                                    <th>Leave Type</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Days</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="previewBody">
+                                <tr class="empty-row">
+                                    <td colspan="9">Import data or create requests to see preview.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SECTION: REST API INTEGRATION ==================== -->
+        <section class="content-section" id="section-api-integration">
+            <div class="section-container">
+                <div class="form-panel">
+                    <div class="panel-header">
+                        <h2>REST API Integration - Public Holidays</h2>
+                        <span class="panel-badge">API Module</span>
+                    </div>
+                    <div class="api-config">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="apiCountry">Country</label>
+                                <select id="apiCountry">
+                                    <option value="IN">India</option>
+                                    <option value="US">United States</option>
+                                    <option value="GB">United Kingdom</option>
+                                    <option value="AE">UAE</option>
+                                    <option value="SG">Singapore</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="apiYear">Year</label>
+                                <input type="number" id="apiYear" value="2026" min="2024" max="2030">
+                            </div>
+                            <div class="form-group api-action">
+                                <button class="btn btn-primary" id="fetchHolidaysBtn" onclick="fetchPublicHolidays()">
+                                    <span class="btn-icon">&#9729;</span> Fetch Holidays
+                                </button>
+                            </div>
+                        </div>
+                        <div class="api-status" id="apiStatus">
+                            <span class="status-dot"></span>
+                            <span class="status-text">Ready to fetch holidays</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-panel">
+                    <div class="panel-header">
+                        <h2>Public Holidays Calendar</h2>
+                        <span class="panel-badge" id="holidayCountBadge">0 Holidays</span>
+                    </div>
+                    <div class="holiday-calendar" id="holidayCalendar">
+                        <div class="calendar-placeholder">
+                            <p>&#128197; Click "Fetch Holidays" to load public holidays for the selected country and year.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-panel">
+                    <div class="panel-header">
+                        <h2>Holiday Leave Prevention</h2>
+                    </div>
+                    <div class="prevention-notice">
+                        <div class="notice-icon">&#128683;</div>
+                        <div class="notice-content">
+                            <h4>Leave Request Validation</h4>
+                            <p>The system automatically prevents leave requests that fall on public holidays. When submitting a leave request, dates matching public holidays will be flagged and excluded from the leave day calculation.</p>
+                            <p><strong>Note:</strong> Fetch holidays first, then create a leave request. The system will check for holiday conflicts.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SECTION: CHAIN OF COMMAND ==================== -->
+        <section class="content-section" id="section-chain-of-command">
+            <div class="section-container">
+                <div class="form-panel">
+                    <div class="panel-header">
+                        <h2>Chain of Command Extension Simulation</h2>
+                        <span class="panel-badge">D365 Pattern</span>
+                    </div>
+                    <div class="coc-explanation">
+                        <div class="concept-box">
+                            <h4>What is Chain of Command?</h4>
+                            <p>Chain of Command is a D365 F&amp;O pattern that allows developers to extend or override base class methods without modifying the original code. It ensures that the base logic still executes unless explicitly skipped.</p>
+                        </div>
+                        <div class="code-comparison">
+                            <div class="code-block base-code">
+                                <h5>Base Class: LeaveCalculation</h5>
+                                <pre><code>class LeaveCalculation {
+    public int calculateLeaveDays(
+        Date startDate, Date endDate
+    ) {
+        int days = endDate - startDate + 1;
+        return days;
+    }
+}</code></pre>
+                            </div>
+                            <div class="code-arrow">&#10132;</div>
+                            <div class="code-block extended-code">
+                                <h5>Extended Class: LeaveCalculationExtension</h5>
+                                <pre><code>[ExtensionOf(classStr(LeaveCalculation))]
+final class LeaveCalculationExtension {
+    public int calculateLeaveDays(
+        Date startDate, Date endDate
+    ) {
+        int days = next calculateLeaveDays(
+            startDate, endDate
+        );
+        days = days + this.addBonusDays();
+        return days;
+    }
+    private int addBonusDays() {
+        return 2; // 2 bonus days
+    }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-panel">
+                    <div class="panel-header">
+                        <h2>Interactive Simulation</h2>
+                    </div>
+                    <div class="simulation-area">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="simStartDate">Start Date</label>
+                                <input type="date" id="simStartDate">
+                            </div>
+                            <div class="form-group">
+                                <label for="simEndDate">End Date</label>
+                                <input type="date" id="simEndDate">
+                            </div>
+                        </div>
+                        <div class="simulation-results">
+                            <div class="result-card base-result">
+                                <h4>Base Calculation</h4>
+                                <p class="result-value" id="baseResult">0</p>
+                                <p class="result-label">days (original logic)</p>
+                            </div>
+                            <div class="result-card extended-result">
+                                <h4>Extended Calculation</h4>
+                                <p class="result-value" id="extendedResult">0</p>
+                                <p class="result-label">days (with +2 bonus)</p>
+                            </div>
+                            <div class="result-card difference-result">
+                                <h4>Bonus Days Added</h4>
+                                <p class="result-value" id="bonusResult">0</p>
+                                <p class="result-label">extra days (Chain of Command)</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="runChainOfCommandSimulation()">
+                            Run Simulation
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SECTION: EVENT HANDLERS ==================== -->
+        <section class="content-section" id="section-event-handlers">
+            <div class="section-container">
+                <div class="form-panel">
+                    <div class="panel-header">
+                        <h2>Event Handler Simulation</h2>
+                        <span class="panel-badge">D365 Pattern</span>
+                    </div>
+                    <div class="event-explanation">
+                        <div class="concept-box">
+                            <h4>What are Event Handlers?</h4>
+                            <p>Event Handlers in D365 F&amp;O are methods that execute in response to specific events like record insertion, update, deletion, or field changes. They enable validation, data manipulation, and side-effect logic without modifying the base table or form code.</p>
+                        </div>
+                        <div class="event-types-grid">
+                            <div class="event-type-card">
+                                <h5>OnChanged Event</h5>
+                                <p>Triggers when a field value changes. Used for real-time validation.</p>
+                                <code>public void employeeId_OnChanged()</code>
+                            </div>
+                            <div class="event-type-card">
+                                <h5>OnValidating Event</h5>
+                                <p>Triggers before saving to validate data integrity.</p>
+                                <code>public void leaveRequest_OnValidating()</code>
+                            </div>
+                            <div class="event-type-card">
+                                <h5>OnPost Event</h5>
+                                <p>Triggers after a database operation completes.</p>
+                                <code>public void leaveRequest_OnInserted()</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-panel">
+                    <div class="panel-header">
+                        <h2>Live Event Validation Demo</h2>
+                    </div>
+                    <div class="event-demo">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="demoEmpId">Employee ID <span class="required">*</span></label>
+                                <input type="text" id="demoEmpId" placeholder="Enter Employee ID (e.g., 1 or EMP001)" oninput="onEmployeeIdChanged(this.value)">
+                                <span class="field-validation" id="empIdValidation"></span>
+                            </div>
+                            <div class="form-group">
+                                <label for="demoEmpName">Employee Name</label>
+                                <input type="text" id="demoEmpName" placeholder="Auto-populated" readonly>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="demoStartDate">Start Date</label>
+                                <input type="date" id="demoStartDate" onchange="onDateChanged()">
+                            </div>
+                            <div class="form-group">
+                                <label for="demoEndDate">End Date</label>
+                                <input type="date" id="demoEndDate" onchange="onDateChanged()">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="demoLeaveType">Leave Type</label>
+                            <select id="demoLeaveType" onchange="onLeaveTypeChanged()">
+                                <option value="">Select Leave Type</option>
+                                <option value="Annual Leave">Annual Leave</option>
+                                <option value="Sick Leave">Sick Leave</option>
+                                <option value="Personal Leave">Personal Leave</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" onclick="validateAndSaveEventDemo()">
+                            Validate &amp; Save (Trigger Events)
+                        </button>
+                    </div>
+                </div>
+                <div class="form-panel">
+                    <div class="panel-header">
+                        <h2>Event Log</h2>
+                        <button class="btn btn-sm" onclick="clearEventLog()">Clear Log</button>
+                    </div>
+                    <div class="event-log" id="eventLog">
+                        <div class="log-empty">No events triggered yet. Interact with the form above to see events.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SECTION: D365 F&O MAPPING ==================== -->
+        <section class="content-section" id="section-d365-mapping">
+            <div class="section-container">
+                <div class="mapping-intro">
+                    <h2>D365 F&amp;O Concept Mapping</h2>
+                    <p>This section explains how each module maps to real Microsoft Dynamics 365 Finance &amp; Operations development concepts.</p>
+                </div>
+                <div class="mapping-grid">
+                    <div class="mapping-card">
+                        <div class="mapping-header">
+                            <span class="mapping-icon">&#128203;</span>
+                            <h3>LeaveRequestTable</h3>
+                        </div>
+                        <div class="mapping-body">
+                            <p><strong>D365 Concept:</strong> Table (Data Model)</p>
+                            <p><strong>Web Equivalent:</strong> JSON array in localStorage</p>
+                            <p><strong>Fields:</strong></p>
+                            <ul>
+                                <li>RequestId (RecId equivalent)</li>
+                                <li>EmployeeId (EmployeeId field)</li>
+                                <li>EmployeeName (EmployeeName field)</li>
+                                <li>Department (Department enum)</li>
+                                <li>LeaveType (LeaveType enum)</li>
+                                <li>StartDate / EndDate (Date fields)</li>
+                                <li>Reason (Memo field)</li>
+                                <li>Status (Enum: Pending/Approved/Rejected)</li>
+                            </ul>
+                            <div class="mapping-code">
+                                <pre><code>// D365 X++ Table Definition
+table LeaveRequestTable
+{
+    Fields
+    {
+        RequestId = RequestId;
+        EmployeeId = EmployeeId;
+        EmployeeName = EmployeeName;
+        Department = Department;
+        LeaveType = LeaveType;
+        StartDate = StartDate;
+        EndDate = EndDate;
+        Reason = Reason;
+        Status = Status;
+    }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mapping-card">
+                        <div class="mapping-header">
+                            <span class="mapping-icon">&#128196;</span>
+                            <h3>LeaveRequestForm</h3>
+                        </div>
+                        <div class="mapping-body">
+                            <p><strong>D365 Concept:</strong> Form (User Interface)</p>
+                            <p><strong>Web Equivalent:</strong> HTML Form with validation</p>
+                            <p><strong>Components:</strong></p>
+                            <ul>
+                                <li>Data source bound to LeaveRequestTable</li>
+                                <li>Fields control for data entry</li>
+                                <li>Button control for Submit action</li>
+                                <li>Event handlers for field validation</li>
+                                <li>Auto-population of derived fields</li>
+                            </ul>
+                            <div class="mapping-code">
+                                <pre><code>// D365 Form Design
+form LeaveRequestForm
+{
+    DataSource = LeaveRequestTable;
+    Controls
+    {
+        fields
+        {
+            EmployeeId;
+            EmployeeName;
+            Department;
+            LeaveType;
+            StartDate;
+            EndDate;
+            Reason;
+        }
+        submitBtn { Text = "Submit"; }
+    }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mapping-card">
+                        <div class="mapping-header">
+                            <span class="mapping-icon">&#10003;</span>
+                            <h3>Workflow Approval Process</h3>
+                        </div>
+                        <div class="mapping-body">
+                            <p><strong>D365 Concept:</strong> Workflow Framework</p>
+                            <p><strong>Web Equivalent:</strong> JavaScript state management</p>
+                            <p><strong>Process Flow:</strong></p>
+                            <ul>
+                                <li>Employee submits request (Pending status)</li>
+                                <li>Manager reviews in approval queue</li>
+                                <li>Approve or Reject with comments</li>
+                                <li>Status updated and logged</li>
+                                <li>Notification sent to employee</li>
+                            </ul>
+                            <div class="mapping-code">
+                                <pre><code>// D365 Workflow Configuration
+class LeaveRequestWorkflow
+    extends WorkflowDocument
+{
+    public void submit()
+    {
+        this.status = LeaveRequestStatus::Pending;
+        this.insert();
+    }
+    public void approve(UserId approver)
+    {
+        this.status = LeaveRequestStatus::Approved;
+        this.approvedBy = approver;
+        this.update();
+    }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mapping-card">
+                        <div class="mapping-header">
+                            <span class="mapping-icon">&#8644;</span>
+                            <h3>Data Entity Import/Export</h3>
+                        </div>
+                        <div class="mapping-body">
+                            <p><strong>D365 Concept:</strong> Data Entities &amp; OData</p>
+                            <p><strong>Web Equivalent:</strong> CSV parse &amp; generate</p>
+                            <p><strong>Features:</strong></p>
+                            <ul>
+                                <li>CSV import with validation</li>
+                                <li>CSV export with filters</li>
+                                <li>Data preview before commit</li>
+                                <li>Error handling for bad data</li>
+                                <li>Batch processing simulation</li>
+                            </ul>
+                            <div class="mapping-code">
+                                <pre><code>// D365 Data Entity
+[DataEntity]
+public class LeaveRequestEntity
+    extends DataEntityBase
+{
+    public void importFromCSV(
+        System.IO.Stream stream
+    ) {
+        // Parse CSV and create records
+    }
+    public void exportToCSV(
+        LeaveRequestStatus filter
+    ) {
+        // Export filtered records
+    }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mapping-card">
+                        <div class="mapping-header">
+                            <span class="mapping-icon">&#9729;</span>
+                            <h3>REST API Integration</h3>
+                        </div>
+                        <div class="mapping-body">
+                            <p><strong>D365 Concept:</strong> REST API / External Services</p>
+                            <p><strong>Web Equivalent:</strong> fetch() API calls</p>
+                            <p><strong>Integration Points:</strong></p>
+                            <ul>
+                                <li>Fetch public holidays from API</li>
+                                <li>Cache responses locally</li>
+                                <li>Validate against holiday calendar</li>
+                                <li>Error handling for API failures</li>
+                                <li>Fallback to cached data</li>
+                            </ul>
+                            <div class="mapping-code">
+                                <pre><code>// D365 REST Client
+class HolidayApiClient
+{
+    public Holiday[] getHolidays(
+        str country, int year
+    ) {
+        HttpClient client = new HttpClient();
+        str url = strFmt(
+            "https://holiday-api/%1/%2",
+            country, year
+        );
+        return client.get(url);
+    }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mapping-card">
+                        <div class="mapping-header">
+                            <span class="mapping-icon">&#9881;</span>
+                            <h3>Chain of Command Extension</h3>
+                        </div>
+                        <div class="mapping-body">
+                            <p><strong>D365 Concept:</strong> Chain of Command Pattern</p>
+                            <p><strong>Web Equivalent:</strong> Class extension / Decorator</p>
+                            <p><strong>How it Works:</strong></p>
+                            <ul>
+                                <li>Base class defines core logic</li>
+                                <li>Extension adds bonus features</li>
+                                <li>next keyword calls base method</li>
+                                <li>Original code stays unmodified</li>
+                                <li>Multiple extensions can chain</li>
+                            </ul>
+                            <div class="mapping-code">
+                                <pre><code>// D365 Chain of Command
+[ExtensionOf(classStr(LeaveCalculation))]
+final class LeaveCalcExtension
+{
+    public int calculateLeaveDays(
+        Date startDate, Date endDate
+    ) {
+        // Calls base, then extends
+        int days = next calculateLeaveDays(
+            startDate, endDate
+        );
+        return days + 2; // Bonus
+    }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mapping-card">
+                        <div class="mapping-header">
+                            <span class="mapping-icon">&#9888;</span>
+                            <h3>Event Handlers</h3>
+                        </div>
+                        <div class="mapping-body">
+                            <p><strong>D365 Concept:</strong> Event Subscribers</p>
+                            <p><strong>Web Equivalent:</strong> DOM event listeners</p>
+                            <p><strong>Event Types:</strong></p>
+                            <ul>
+                                <li>OnChanged - field value changes</li>
+                                <li>OnValidating - pre-save validation</li>
+                                <li>OnPost - after record operations</li>
+                                <li>OnDeleting - before record deletion</li>
+                                <li>Custom business events</li>
+                            </ul>
+                            <div class="mapping-code">
+                                <pre><code>// D365 Event Handler
+[SubscribesToOnChanged(
+    fieldNum(LeaveRequestTable, EmployeeId)
+)]
+public static void onEmployeeIdChanged(
+    FormControl sender
+) {
+    // Validate employee ID
+    // Auto-populate employee name
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Approval Modal -->
+    <div class="modal-overlay" id="approvalModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Review Leave Request</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <p>Loading...</p>
+            </div>
+            <div class="modal-footer" id="modalFooter">
+                <button class="btn btn-success" id="modalApproveBtn" onclick="approveRequest()">
+                    &#10003; Approve
+                </button>
+                <button class="btn btn-danger" id="modalRejectBtn" onclick="rejectRequest()">
+                    &#10007; Reject
+                </button>
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
